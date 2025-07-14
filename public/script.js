@@ -85,7 +85,7 @@ document.addEventListener("DOMContentLoaded", () => {
       btn.disabled = true;
       btn.textContent = "Generating...";
 
-      const response = await fetch("http://localhost:3001/api/generate-image", {
+      const response = await fetch("https://games-hub-3igi.onrender.com/api/generate-image", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ prompt: promptText })

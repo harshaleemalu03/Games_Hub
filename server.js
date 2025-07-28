@@ -6,20 +6,20 @@ const fs = require('fs');
 const path = require('path');
 const { v4: uuidv4 } = require('uuid');
 const sharp = require('sharp');
+const FormData = require('form-data');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
 
 const SEGMIND_API_KEY = process.env.SEGMIND_API_KEY;
 const CLIPDROP_API_KEY = process.env.CLIPDROP_API_KEY;
-
-const SEGMIND_URL = "https://api.segmind.com/v1/seedream-v3-text-to-image";
+const REMOVE_BG_API_KEY = process.env.REMOVE_BG_API_KEY;
 
 app.use(cors());
 app.use(express.json());
 app.use(express.static('public'));
 
-// ✅ Background generation (Segmind)
+// === ✅ Background generation (Segmind) ===
 app.post('/api/generate-image', async (req, res) => {
   try {
     const { prompt } = req.body;
@@ -40,7 +40,7 @@ app.post('/api/generate-image', async (req, res) => {
       image_quality: 95
     };
 
-    const response = await axios.post(SEGMIND_URL, payload, {
+    const response = await axios.post("https://api.segmind.com/v1/seedream-v3-text-to-image", payload, {
       headers: {
         'x-api-key': SEGMIND_API_KEY,
         'Content-Type': 'application/json'
@@ -50,7 +50,6 @@ app.post('/api/generate-image', async (req, res) => {
 
     const buffer = Buffer.from(response.data, 'binary');
     const base64Image = `data:image/png;base64,${buffer.toString('base64')}`;
-
     res.json({ image: base64Image });
 
   } catch (err) {
@@ -59,7 +58,7 @@ app.post('/api/generate-image', async (req, res) => {
   }
 });
 
-// ✅ Sprite generation with SHARP white bg removal
+// === ✅ Sprite generation + remove.bg background removal ===
 app.post('/api/generate-sprite', async (req, res) => {
   try {
     const { prompt } = req.body;
@@ -67,6 +66,7 @@ app.post('/api/generate-sprite', async (req, res) => {
       return res.status(400).json({ error: "Prompt too short" });
     }
 
+    // 1. Generate sprite using ClipDrop
     const spriteRes = await axios.post(
       'https://clipdrop-api.co/text-to-image/v1',
       { prompt },
@@ -79,22 +79,38 @@ app.post('/api/generate-sprite', async (req, res) => {
       }
     );
 
-    const inputBuffer = Buffer.from(spriteRes.data);
-    const cleanedBuffer = await sharp(inputBuffer)
-      .removeAlpha()
-      .flatten({ background: '#ffffff' }) // flatten over white to normalize
-      .toColourspace('b-w')               // grayscale for threshold
-      .threshold(245)                     // isolate white areas
-      .toColourspace('rgb')               // return to color
-      .ensureAlpha()
-      .extractChannel('red')
-      .toBuffer();
+    const tempFile = `temp_sprite_${uuidv4()}.png`;
+    const cleanedFile = `cleaned_sprite_${uuidv4()}.png`;
 
+    fs.writeFileSync(tempFile, spriteRes.data);
+
+    // 2. Send image to remove.bg API
+    const formData = new FormData();
+    formData.append('image_file', fs.createReadStream(tempFile));
+    formData.append('size', 'auto');
+
+    const removeRes = await axios.post('https://api.remove.bg/v1.0/removebg', formData, {
+      headers: {
+        ...formData.getHeaders(),
+        'X-Api-Key': REMOVE_BG_API_KEY
+      },
+      responseType: 'arraybuffer'
+    });
+
+    fs.writeFileSync(cleanedFile, removeRes.data);
+    const cleanedBuffer = fs.readFileSync(cleanedFile);
+
+    // 3. Encode for frontend
     const base64Image = `data:image/png;base64,${cleanedBuffer.toString('base64')}`;
+
+    // 4. Cleanup temp files
+    fs.unlinkSync(tempFile);
+    fs.unlinkSync(cleanedFile);
+
     res.json({ image: base64Image });
 
   } catch (err) {
-    console.error("🔥 Sprite generation failed:", err.message);
+    console.error("🔥 Sprite generation failed:", err.response?.data || err.message);
     res.status(500).json({ error: "Sprite generation failed", details: err.message });
   }
 });

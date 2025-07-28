@@ -1,14 +1,15 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <title>Neon Tetris Pro</title>
-    <link rel="stylesheet" href="style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Orbitron:wght@400;700&display=swap" rel="stylesheet" />
 </head>
 <body>
     <div id="game-container">
+        <!-- MAIN MENU -->
         <div id="main-menu" class="screen">
             <h1>NEON TETRIS PRO</h1>
             <div class="menu-options">
@@ -20,14 +21,15 @@
             <div class="version-info">v2.5.1 © 2023</div>
         </div>
 
+        <!-- GAME SCREEN -->
         <div id="game-screen" class="screen hidden">
             <div class="game-header">
                 <div id="score-display">SCORE: 00000</div>
                 <div id="level-display">LEVEL: 01</div>
                 <div id="next-piece">NEXT:</div>
-                <canvas id="next-canvas"></canvas>
+                <canvas id="next-canvas" width="60" height="60"></canvas>
             </div>
-            <canvas id="tetris-canvas"></canvas>
+            <canvas id="tetris-canvas" width="240" height="400"></canvas>
             <div id="controls">
                 <button class="control-btn" id="left-btn">◀</button>
                 <div class="control-column">
@@ -39,6 +41,7 @@
             </div>
         </div>
 
+        <!-- GAME OVER -->
         <div id="game-over" class="screen hidden">
             <h2>GAME OVER!</h2>
             <div class="result-display">
@@ -51,6 +54,7 @@
             </div>
         </div>
 
+        <!-- HIGHSCORES -->
         <div id="highscores-screen" class="screen hidden">
             <h2>HIGHSCORES</h2>
             <ol id="highscores-list">
@@ -61,8 +65,20 @@
             <button id="back-btn" class="action-btn">BACK</button>
         </div>
 
+        <!-- SETTINGS -->
         <div id="settings-screen" class="screen hidden">
             <h2>SETTINGS</h2>
+
+            <!-- 🎯 Difficulty Level -->
+            <div class="setting-option">
+                <label for="difficulty-select">DIFFICULTY:</label>
+                <select id="difficulty-select">
+                    <option value="easy">EASY</option>
+                    <option value="moderate">MODERATE</option>
+                    <option value="difficult">DIFFICULT</option>
+                </select>
+            </div>
+
             <div class="setting-option">
                 <label for="theme-select">THEME:</label>
                 <select id="theme-select">
@@ -81,15 +97,18 @@
             <div class="setting-option">
                 <label for="sound-toggle">SOUND:</label>
                 <div class="toggle-switch">
-                    <input type="checkbox" id="sound-toggle" checked>
+                    <input type="checkbox" id="sound-toggle" checked />
                     <span class="slider"></span>
                 </div>
             </div>
+
             <button id="save-settings-btn" class="action-btn neon">SAVE SETTINGS</button>
         </div>
-        
+
+        <!-- EXPORT BUTTON -->
         <button id="export-btn" class="action-btn">EXPORT GAME</button>
 
+        <!-- HELP SCREEN -->
         <div id="help-screen" class="screen hidden">
             <h2>HOW TO PLAY</h2>
             <div class="instructions">
@@ -102,6 +121,7 @@
             <button id="help-back-btn" class="action-btn">BACK</button>
         </div>
 
+        <!-- PAUSE SCREEN -->
         <div id="pause-screen" class="screen hidden">
             <h2>GAME PAUSED</h2>
             <div class="pause-options">
@@ -110,6 +130,9 @@
             </div>
         </div>
     </div>
+
+    <!-- SCRIPTS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.0/jszip.min.js"></script>
     <script src="script.js"></script>
     <script>
         const settings = JSON.parse(localStorage.getItem("gameSettings"));
@@ -120,6 +143,5 @@
             document.body.style.backgroundRepeat = "no-repeat";
         }
     </script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.0/jszip.min.js"></script>
 </body>
 </html>

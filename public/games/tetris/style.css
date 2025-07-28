@@ -361,16 +361,16 @@ input:checked + .slider:before {
     #main-menu h1 {
         font-size: 2rem;
     }
-    
+
     .menu-btn {
         font-size: 1rem;
         padding: 0.8rem;
     }
-    
+
     #game-over, #highscores-screen, #settings-screen, #help-screen, #pause-screen {
         padding: 1.5rem;
     }
-    
+
     .control-btn {
         width: 50px;
         height: 50px;
